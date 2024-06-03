@@ -39,6 +39,7 @@ class Meeting(Document):
 				self.address = data.customer_address
 				self.address_display = data.address_display
 				self.organization = data.organisation
+		self.check_min_participants()
 
 	def on_submit(self):
 		user_name = frappe.db.get_value("Employee",{"user_id":frappe.session.user},"employee_name")
@@ -71,6 +72,13 @@ class Meeting(Document):
 			if not target_lead.mobile_no:
 				target_lead.mobile_no = self.mobile_no
 			target_lead.save(ignore_permissions=True)
+
+		self.check_min_participants()
+
+	def check_min_participants(self):
+		if self.internal_meeting == 1:
+			if len(self.get('meeting_company_representative')) < 2:
+				frappe.throw(_("Please add atleast two Participants"))
 
 @frappe.whitelist()
 def get_events(start, end, filters=None):
